@@ -3,18 +3,24 @@ import os
 import sys
 from UnityPy import Environment
 import zipfile
+from io import BytesIO
+from log import init_console_logger
+import logging
 
 DEBUG = False
 
-def run(path):
+def run(path, logger):
+    Tips = None
+    GameInformation = None
+    Collections = None
     with open("typetree.json") as f:
         typetree = json.load(f)
     env = Environment()
     with zipfile.ZipFile(path) as apk:
         with apk.open("assets/bin/Data/globalgamemanagers.assets") as f:
-            env.load_file(f.read(), name="assets/bin/Data/globalgamemanagers.assets")
+            env.load_file(BytesIO(f.read()), name="assets/bin/Data/globalgamemanagers.assets")
         with apk.open("assets/bin/Data/level0") as f:
-            env.load_file(f.read())
+            env.load_file(BytesIO(f.read()))
     for obj in env.objects:
         if obj.type.name != "MonoBehaviour":
             continue
@@ -43,8 +49,8 @@ def run(path):
             difficulty.append([song["songsId"]]+song["difficulty"])
             table.append((song["songsId"], song["songsName"], song["composer"], song["illustrator"], *song["charter"]))
 
-    print(difficulty)
-    print(table)
+    logger.info(difficulty)
+    logger.info(table)
 
     with open("info/difficulty.tsv", "w", encoding="utf8") as f:
         for item in difficulty:
@@ -71,8 +77,8 @@ def run(path):
     with open("info/illustration.txt", "w", encoding="utf8") as f:
         for item in illustration:
             f.write("%s\n" % item)
-    print(single)
-    print(illustration)
+    logger.info(single)
+    logger.info(illustration)
 
     D = {}
     for item in Collections.collectionItems:
@@ -102,9 +108,9 @@ if __name__ == "__main__":
     if len(sys.argv) == 1 and os.path.isdir("/data/"):
         import subprocess
         r = subprocess.run("pm path com.PigeonGames.Phigros",stdin=subprocess.DEVNULL,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,shell=True)
-        path = r.stdout[8:-1].decode()
+        file_path = r.stdout[8:-1].decode()
     else:
-        path = sys.argv[1]
+        file_path = sys.argv[1]
     if not os.path.isdir("info"):
         os.mkdir("info")
-    run(path)
+    run(file_path, init_console_logger())
