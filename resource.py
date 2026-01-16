@@ -34,7 +34,7 @@ queue_in = Queue()
 def io():
     while True:
         item = queue_in.get()
-        if item == None:
+        if item is None:
             break
         else:
             path, resource = item
@@ -172,9 +172,9 @@ def run(path):
                     line = f.readline()
             index1 = l.index("Doppelganger.LeaF")
             index2 = l.index("Poseidon.1112vsStar")
-            del l[index2:len(l) - update.getint("side_story")]
-            del l[index1:index2 - update.getint("other_song")]
-            del l[:index1 - update.getint("main_story")]
+            del l[index2:len(l) - update["side_story"]]
+            del l[index1:index2 - update["other_song"]]
+            del l[:index1 - update["main_story"]]
             print(l)
             env = Environment()
             with ZipFile(path) as apk:
